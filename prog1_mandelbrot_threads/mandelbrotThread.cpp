@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <thread>
+#include <vector>
 
 #include "CycleTimer.h"
 
@@ -35,7 +36,20 @@ void workerThreadStart(WorkerArgs * const args) {
     // program that uses two threads, thread 0 could compute the top
     // half of the image and thread 1 could compute the bottom half.
 
-    printf("Hello world from thread %d\n", args->threadId);
+    // printf("Hello world from thread %d\n", args->threadId);
+    int totalRowsRound = (args->height - 1 + args->numThreads) / args->numThreads;      //divide the task into all threads
+    int totalRowsActual = (args->threadId < args->numThreads - 1) ? totalRowsRound : args->height - (args->threadId * totalRowsRound);     //对于最后一个线程需要处理的任务数进行特殊的计算
+
+    // int totalRows =  args->height / args->numThreads;
+    int startRow = args->threadId * totalRowsRound;
+    mandelbrotSerial(
+        args->x0, args->y0, args->x1, args->y1,
+        args->width, args->height,
+        startRow, totalRowsActual,
+        args->maxIterations,
+        args->output
+    );
+
 }
 
 //
@@ -60,6 +74,12 @@ void mandelbrotThread(
     // Creates thread objects that do not yet represent a thread.
     std::thread workers[MAX_THREADS];
     WorkerArgs args[MAX_THREADS];
+
+    // //Also can represented by the following method
+    // std::vector<std::thread> workers;
+    // for (int i=1; i<numThreads; i++) {
+    //     workers.push_back(std::thread(workerThreadStart, &args[i]));
+    // }
 
     for (int i=0; i<numThreads; i++) {
       
@@ -86,11 +106,12 @@ void mandelbrotThread(
         workers[i] = std::thread(workerThreadStart, &args[i]);
     }
     
+    // this should be the main application thread
     workerThreadStart(&args[0]);
 
     // join worker threads
     for (int i=1; i<numThreads; i++) {
-        workers[i].join();
+        workers[i].join();      //block the thread until it finished
     }
 }
 

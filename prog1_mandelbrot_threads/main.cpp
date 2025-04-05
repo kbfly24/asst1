@@ -4,14 +4,14 @@
 
 #include "CycleTimer.h"
 
-extern void mandelbrotSerial(
+extern void mandelbrotSerial(       // 串行计算Mandelbrot集
     float x0, float y0, float x1, float y1,
     int width, int height,
     int startRow, int numRows,
     int maxIterations,
     int output[]);
 
-extern void mandelbrotThread(
+extern void mandelbrotThread(   // 多线程计算 Mandelbrot 集
     int numThreads,
     float x0, float y0, float x1, float y1,
     int width, int height,
@@ -24,16 +24,20 @@ extern void writePPMImage(
     const char *filename,
     int maxIterations);
 
+
+// 辅助函数，用于对视图的边界进行缩放和平移
 void
 scaleAndShift(float& x0, float& x1, float& y0, float& y1,
               float scale,
               float shiftX, float shiftY)
 {
-
+    // scale
     x0 *= scale;
     x1 *= scale;
     y0 *= scale;
     y1 *= scale;
+
+    // shift
     x0 += shiftX;
     x1 += shiftX;
     y0 += shiftY;
